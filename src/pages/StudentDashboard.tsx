@@ -37,7 +37,7 @@ const StudentDashboard = () => {
         return;
       }
 
-      setProfile(data);
+      setProfile(data as Profile);
     };
 
     getProfile();

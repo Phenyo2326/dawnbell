@@ -37,7 +37,7 @@ const TutorDashboard = () => {
         return;
       }
 
-      setProfile(data);
+      setProfile(data as Profile);
     };
 
     getProfile();
