@@ -11,6 +11,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,14 +26,36 @@ const Login = () => {
       toast.error('Login failed', {
         description: error.message
       });
-    } else {
-      toast.success('Successfully logged in');
-      navigate('/dashboard');
+      setLoading(false);
+      return;
     }
+
+    // Fetch user profile to determine which dashboard to redirect to
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+      .single();
+
+    if (profileError) {
+      toast.error('Error fetching user profile', {
+        description: profileError.message
+      });
+      setLoading(false);
+      return;
+    }
+
+    toast.success('Successfully logged in');
+    
+    // Redirect based on user role
+    if (profileData.role === 'student') {
+      navigate('/student-dashboard');
+    } else if (profileData.role === 'tutor') {
+      navigate('/tutor-dashboard');
+    }
+    
     setLoading(false);
   };
-
-  const [loading, setLoading] = useState(false);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
