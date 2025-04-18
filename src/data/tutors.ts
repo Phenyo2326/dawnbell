@@ -1,0 +1,106 @@
+
+import { StaticImageData } from "next/image";
+
+export interface Tutor {
+  id: number;
+  name: string;
+  avatar: string;
+  subjects: string[];
+  rating: number;
+  reviews: number;
+  hourlyRate: number;
+  education: string;
+  availability: string;
+  description: string;
+}
+
+export const tutors: Tutor[] = [
+  {
+    id: 1,
+    name: "Alex Thompson",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    subjects: ["Mathematics", "Calculus", "Statistics"],
+    rating: 4.9,
+    reviews: 124,
+    hourlyRate: 35,
+    education: "Ph.D. in Mathematics, MIT",
+    availability: "Weekdays, Evenings",
+    description: "Experienced math tutor specializing in advanced calculus and statistics. I focus on building strong foundations through practical examples."
+  },
+  {
+    id: 2,
+    name: "Sophia Chen",
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    subjects: ["Physics", "Computer Science"],
+    rating: 4.8,
+    reviews: 98,
+    hourlyRate: 40,
+    education: "M.S. in Computer Science, Stanford",
+    availability: "Weekends, Evenings",
+    description: "Passionate about making complex concepts simple. I teach with real-world examples to help you apply theory to practice."
+  },
+  {
+    id: 3,
+    name: "Marcus Johnson",
+    avatar: "https://randomuser.me/api/portraits/men/22.jpg",
+    subjects: ["Chemistry", "Biology"],
+    rating: 4.7,
+    reviews: 86,
+    hourlyRate: 30,
+    education: "B.S. in Chemistry, UC Berkeley",
+    availability: "Weekdays, Mornings",
+    description: "I make science fun and accessible, focusing on lab techniques and exam preparation strategies."
+  },
+  {
+    id: 4,
+    name: "Priya Patel",
+    avatar: "https://randomuser.me/api/portraits/women/67.jpg",
+    subjects: ["English Literature", "Essay Writing"],
+    rating: 4.9,
+    reviews: 112,
+    hourlyRate: 32,
+    education: "M.A. in English Literature, Columbia",
+    availability: "Flexible Schedule",
+    description: "Helping students find their voice through writing. Specializing in essay structure, analysis, and critical thinking."
+  },
+  {
+    id: 5,
+    name: "David Wilson",
+    avatar: "https://randomuser.me/api/portraits/men/52.jpg",
+    subjects: ["History", "Political Science"],
+    rating: 4.6,
+    reviews: 75,
+    hourlyRate: 28,
+    education: "Ph.D. in History, Yale",
+    availability: "Weekends, Afternoons",
+    description: "Passionate about connecting historical events to modern contexts. I focus on critical analysis and research methods."
+  },
+  {
+    id: 6,
+    name: "Jasmine Williams",
+    avatar: "https://randomuser.me/api/portraits/women/28.jpg",
+    subjects: ["Spanish", "French"],
+    rating: 4.8,
+    reviews: 93,
+    hourlyRate: 34,
+    education: "B.A. in Linguistics, NYU",
+    availability: "Weekdays, Evenings",
+    description: "Conversational language tutor with immersive teaching methods. I make learning new languages fun and practical."
+  }
+];
+
+export const subjects = [
+  "Mathematics",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Computer Science",
+  "English Literature",
+  "Essay Writing",
+  "History",
+  "Political Science",
+  "Spanish",
+  "French",
+  "Statistics",
+  "Calculus"
+];
