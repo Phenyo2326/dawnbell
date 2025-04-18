@@ -11,21 +11,21 @@ const Navbar = () => {
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <a href="/" className="flex items-center gap-2">
-            <span className="font-bold text-2xl gradient-text">TutorMatch</span>
+            <span className="font-bold text-2xl gradient-text">Dawnbell Academy</span>
           </a>
         </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-foreground hover:text-primary transition-colors">Find Tutors</a>
-          <a href="#" className="text-foreground hover:text-primary transition-colors">Subjects</a>
-          <a href="#" className="text-foreground hover:text-primary transition-colors">How It Works</a>
+          <a href="#" className="text-foreground hover:text-primary transition-colors">Courses</a>
+          <a href="#" className="text-foreground hover:text-primary transition-colors">Instructors</a>
+          <a href="#" className="text-foreground hover:text-primary transition-colors">Learning Paths</a>
           <a href="#" className="text-foreground hover:text-primary transition-colors">Resources</a>
         </nav>
 
         <div className="hidden md:flex items-center space-x-4">
           <Button variant="outline">Log in</Button>
-          <Button>Sign up</Button>
+          <Button>Join Now</Button>
         </div>
 
         {/* Mobile menu button */}
@@ -42,13 +42,13 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden absolute top-16 inset-x-0 bg-white shadow-lg z-50 border-b animate-fade-in">
           <div className="flex flex-col py-4 px-8 space-y-4">
-            <a href="#" className="text-foreground hover:text-primary py-2 transition-colors">Find Tutors</a>
-            <a href="#" className="text-foreground hover:text-primary py-2 transition-colors">Subjects</a>
-            <a href="#" className="text-foreground hover:text-primary py-2 transition-colors">How It Works</a>
+            <a href="#" className="text-foreground hover:text-primary py-2 transition-colors">Courses</a>
+            <a href="#" className="text-foreground hover:text-primary py-2 transition-colors">Instructors</a>
+            <a href="#" className="text-foreground hover:text-primary py-2 transition-colors">Learning Paths</a>
             <a href="#" className="text-foreground hover:text-primary py-2 transition-colors">Resources</a>
             <div className="flex flex-col space-y-2 pt-2">
               <Button variant="outline">Log in</Button>
-              <Button>Sign up</Button>
+              <Button>Join Now</Button>
             </div>
           </div>
         </div>
