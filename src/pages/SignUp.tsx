@@ -11,6 +11,7 @@ const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'student' | 'tutor'>('student');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -23,7 +24,8 @@ const SignUp = () => {
       password,
       options: {
         data: {
-          full_name: fullName
+          full_name: fullName,
+          role: role
         }
       }
     });
@@ -34,7 +36,7 @@ const SignUp = () => {
       });
     } else {
       toast.success('Account created successfully');
-      navigate('/dashboard');
+      navigate(role === 'student' ? '/student-dashboard' : '/tutor-dashboard');
     }
     setLoading(false);
   };
@@ -90,6 +92,27 @@ const SignUp = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10"
               />
+            </div>
+          </div>
+          <div>
+            <label className="block mb-2">I want to join as</label>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                type="button"
+                variant={role === 'student' ? 'default' : 'outline'}
+                onClick={() => setRole('student')}
+                className="w-full"
+              >
+                Student
+              </Button>
+              <Button
+                type="button"
+                variant={role === 'tutor' ? 'default' : 'outline'}
+                onClick={() => setRole('tutor')}
+                className="w-full"
+              >
+                Tutor
+              </Button>
             </div>
           </div>
           <Button 

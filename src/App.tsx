@@ -8,7 +8,8 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
+import StudentDashboard from "./pages/StudentDashboard";
+import TutorDashboard from "./pages/TutorDashboard";
 import { useAuth } from "./hooks/useAuth";
 import React, { Suspense } from "react";
 
@@ -40,14 +41,21 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route 
-              path="/dashboard" 
+              path="/student-dashboard" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <StudentDashboard />
                 </ProtectedRoute>
               } 
             />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route 
+              path="/tutor-dashboard" 
+              element={
+                <ProtectedRoute>
+                  <TutorDashboard />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
