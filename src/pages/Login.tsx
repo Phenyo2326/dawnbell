@@ -20,67 +20,77 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      toast.error('Login failed', {
-        description: error.message
+    try {
+      // Sign in with email and password
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-      setLoading(false);
-      return;
-    }
 
-    // Fetch the current user
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast.error('User not found');
-      setLoading(false);
-      return;
-    }
+      if (authError) {
+        toast.error('Login failed', {
+          description: authError.message
+        });
+        setLoading(false);
+        return;
+      }
 
-    // Fetch user profile to check if the selected role matches
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle();
+      if (!authData.user) {
+        toast.error('Login failed', {
+          description: 'User not found'
+        });
+        setLoading(false);
+        return;
+      }
 
-    if (profileError) {
-      toast.error('Error fetching user profile', {
-        description: profileError.message
+      // Fetch user profile to check if the selected role matches
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        toast.error('Error fetching user profile', {
+          description: profileError.message
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!profileData) {
+        toast.error('Profile not found');
+        // Sign out the user since profile doesn't exist
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
+      // Check if selected role matches profile role
+      if (profileData.role !== role) {
+        toast.error('Invalid role selected', {
+          description: 'Please select the correct role for your account'
+        });
+        // Sign out the user since role doesn't match
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
+      toast.success('Welcome back', {
+        description: `Logged in as ${profileData.full_name}`
       });
+      
+      // Redirect based on role
+      if (role === 'student') {
+        navigate('/student-dashboard');
+      } else {
+        navigate('/tutor-dashboard');
+      }
+    } catch (error) {
+      console.error('Unexpected error during login:', error);
+      toast.error('An unexpected error occurred');
       setLoading(false);
-      return;
-    }
-
-    if (!profileData) {
-      toast.error('Profile not found');
-      setLoading(false);
-      return;
-    }
-
-    // Check if selected role matches profile role
-    if (profileData.role !== role) {
-      toast.error('Invalid role selected', {
-        description: 'Please select the correct role for your account'
-      });
-      // Sign out the user since role doesn't match
-      await supabase.auth.signOut();
-      setLoading(false);
-      return;
-    }
-
-    toast.success('Successfully logged in');
-    
-    // Redirect based on role
-    if (role === 'student') {
-      navigate('/student-dashboard');
-    } else {
-      navigate('/tutor-dashboard');
     }
   };
 

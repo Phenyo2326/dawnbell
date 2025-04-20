@@ -16,30 +16,43 @@ const StudentsList = () => {
     const fetchStudents = async () => {
       if (!user) return;
       
-      const { data, error } = await supabase
-        .from('sessions')
-        .select(`
-          student:student_id(
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('tutor_id', user.id);
+      try {
+        // Fetch sessions where this tutor is assigned
+        const { data, error } = await supabase
+          .from('sessions')
+          .select(`
+            student_id,
+            profiles:student_id(
+              id,
+              full_name,
+              avatar_url
+            )
+          `)
+          .eq('tutor_id', user.id);
 
-      if (!error && data) {
-        const uniqueStudents = Array.from(
-          new Map(
-            data
-              .map(session => session.student)
-              .filter(Boolean)
-              .map(profile => [profile.id, profile])
-          ).values()
-        );
-        
-        setStudents(uniqueStudents);
+        if (error) {
+          console.error('Error fetching students:', error);
+          return;
+        }
+
+        if (data) {
+          // Extract unique student profiles
+          const uniqueStudents = Array.from(
+            new Map(
+              data
+                .map(session => session.profiles)
+                .filter(Boolean)
+                .map(profile => [profile.id, profile])
+            ).values()
+          );
+          
+          setStudents(uniqueStudents);
+        }
+      } catch (error) {
+        console.error('Error in fetchStudents:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchStudents();
