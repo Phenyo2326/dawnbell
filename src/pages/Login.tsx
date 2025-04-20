@@ -30,16 +30,33 @@ const Login = () => {
       return;
     }
 
+    // Fetch the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error('User not found');
+      setLoading(false);
+      return;
+    }
+
     // Fetch user profile to determine which dashboard to redirect to
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('role')
-      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-      .single();
+      .eq('user_id', user.id)
+      .maybeSingle(); // Using maybeSingle() instead of single() to avoid errors
 
     if (profileError) {
       toast.error('Error fetching user profile', {
         description: profileError.message
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (!profileData) {
+      toast.error('Profile not found', {
+        description: 'Your user account might not have a complete profile'
       });
       setLoading(false);
       return;
@@ -52,9 +69,10 @@ const Login = () => {
       navigate('/student-dashboard');
     } else if (profileData.role === 'tutor') {
       navigate('/tutor-dashboard');
+    } else {
+      toast.error('Invalid user role');
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (

@@ -13,14 +13,25 @@ const StudentsList = () => {
     const fetchStudents = async () => {
       if (!user) return;
       
+      // Using a different approach to get distinct students
+      // First, get all sessions for this tutor
       const { data, error } = await supabase
         .from('sessions')
-        .select('profiles!sessions_student_id_fkey(full_name, avatar_url)')
-        .eq('tutor_id', user.id)
-        .distinct();
+        .select('profiles!sessions_student_id_fkey(full_name, avatar_url, id)')
+        .eq('tutor_id', user.id);
 
       if (!error && data) {
-        setStudents(data.map(session => session.profiles));
+        // Extract the profiles and remove duplicates by id
+        const uniqueStudents = Array.from(
+          new Map(
+            data
+              .map(session => session.profiles)
+              .filter(Boolean)
+              .map(profile => [profile.id, profile])
+          ).values()
+        );
+        
+        setStudents(uniqueStudents);
       }
       setLoading(false);
     };

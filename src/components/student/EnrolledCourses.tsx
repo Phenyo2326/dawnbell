@@ -13,20 +13,32 @@ const EnrolledCourses = () => {
     const fetchCourses = async () => {
       if (!user) return;
       
+      // Using a different approach to get distinct courses
+      // First, get all sessions for this student
       const { data, error } = await supabase
         .from('sessions')
         .select(`
           subjects(
+            id,
             name,
             description,
             profiles!subjects_tutor_id_fkey(full_name)
           )
         `)
-        .eq('student_id', user.id)
-        .distinct();
+        .eq('student_id', user.id);
 
       if (!error && data) {
-        setCourses(data.map(session => session.subjects));
+        // Extract the subjects and remove duplicates by id
+        const uniqueCourses = Array.from(
+          new Map(
+            data
+              .map(session => session.subjects)
+              .filter(Boolean)
+              .map(subject => [subject.id, subject])
+          ).values()
+        );
+        
+        setCourses(uniqueCourses);
       }
       setLoading(false);
     };
