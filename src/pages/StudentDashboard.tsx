@@ -1,21 +1,18 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import EnrolledCourses from '@/components/student/EnrolledCourses';
+import UpcomingSessions from '@/components/student/UpcomingSessions';
+import { MessageSquare } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Book, Calendar, MessageSquare } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Profile {
-  role: 'student' | 'tutor';
-  full_name: string;
-}
+import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -23,7 +20,7 @@ const StudentDashboard = () => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('role, full_name')
+        .select('full_name, role')
         .eq('user_id', user.id)
         .single();
 
@@ -37,7 +34,7 @@ const StudentDashboard = () => {
         return;
       }
 
-      setProfile(data as Profile);
+      setProfile(data);
     };
 
     getProfile();
@@ -55,41 +52,25 @@ const StudentDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Book className="h-5 w-5" />
-                My Courses
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">View and manage your enrolled courses</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Upcoming Sessions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Check your scheduled tutoring sessions</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Messages
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Communicate with your tutors</p>
-            </CardContent>
-          </Card>
+          <div className="md:col-span-2">
+            <UpcomingSessions />
+          </div>
+          <div>
+            <EnrolledCourses />
+          </div>
+          <div className="md:col-span-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Messages
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Coming soon: Chat with your tutors</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

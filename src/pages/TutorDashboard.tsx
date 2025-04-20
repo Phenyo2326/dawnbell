@@ -1,21 +1,17 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import StudentsList from '@/components/tutor/StudentsList';
+import TeachingSchedule from '@/components/tutor/TeachingSchedule';
+import { MessageSquare } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Users, Calendar, MessageSquare } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Profile {
-  role: 'student' | 'tutor';
-  full_name: string;
-}
+import { useNavigate } from 'react-router-dom';
 
 const TutorDashboard = () => {
   const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -23,7 +19,7 @@ const TutorDashboard = () => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('role, full_name')
+        .select('full_name, role')
         .eq('user_id', user.id)
         .single();
 
@@ -37,11 +33,11 @@ const TutorDashboard = () => {
         return;
       }
 
-      setProfile(data as Profile);
+      setProfile(data);
     };
 
     getProfile();
-  }, [user, navigate]);
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -55,41 +51,25 @@ const TutorDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                My Students
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">View and manage your students</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Teaching Schedule
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Manage your teaching sessions</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Messages
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Communicate with your students</p>
-            </CardContent>
-          </Card>
+          <div className="md:col-span-2">
+            <TeachingSchedule />
+          </div>
+          <div>
+            <StudentsList />
+          </div>
+          <div className="md:col-span-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Messages
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Coming soon: Chat with your students</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
