@@ -6,10 +6,13 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Mail } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('student');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -39,12 +42,12 @@ const Login = () => {
       return;
     }
 
-    // Fetch user profile to determine which dashboard to redirect to
+    // Fetch user profile to check if the selected role matches
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('user_id', user.id)
-      .maybeSingle(); // Using maybeSingle() instead of single() to avoid errors
+      .maybeSingle();
 
     if (profileError) {
       toast.error('Error fetching user profile', {
@@ -55,23 +58,29 @@ const Login = () => {
     }
 
     if (!profileData) {
-      toast.error('Profile not found', {
-        description: 'Your user account might not have a complete profile'
+      toast.error('Profile not found');
+      setLoading(false);
+      return;
+    }
+
+    // Check if selected role matches profile role
+    if (profileData.role !== role) {
+      toast.error('Invalid role selected', {
+        description: 'Please select the correct role for your account'
       });
+      // Sign out the user since role doesn't match
+      await supabase.auth.signOut();
       setLoading(false);
       return;
     }
 
     toast.success('Successfully logged in');
     
-    // Redirect based on user role
-    if (profileData.role === 'student') {
+    // Redirect based on role
+    if (role === 'student') {
       navigate('/student-dashboard');
-    } else if (profileData.role === 'tutor') {
-      navigate('/tutor-dashboard');
     } else {
-      toast.error('Invalid user role');
-      setLoading(false);
+      navigate('/tutor-dashboard');
     }
   };
 
@@ -82,6 +91,24 @@ const Login = () => {
           Log In to Dawnbell Academy
         </h2>
         <form onSubmit={handleLogin} className="space-y-4">
+          <div className="space-y-3">
+            <Label>I am a:</Label>
+            <RadioGroup
+              value={role}
+              onValueChange={setRole}
+              className="flex space-x-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="student" id="student" />
+                <Label htmlFor="student">Student</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="tutor" id="tutor" />
+                <Label htmlFor="tutor">Tutor</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <div>
             <label htmlFor="email" className="block mb-2">Email</label>
             <div className="relative">
@@ -97,6 +124,7 @@ const Login = () => {
               />
             </div>
           </div>
+
           <div>
             <label htmlFor="password" className="block mb-2">Password</label>
             <div className="relative">
@@ -112,6 +140,7 @@ const Login = () => {
               />
             </div>
           </div>
+
           <Button 
             type="submit" 
             className="w-full" 

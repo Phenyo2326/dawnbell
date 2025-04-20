@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,14 +18,20 @@ const StudentsList = () => {
       
       const { data, error } = await supabase
         .from('sessions')
-        .select('profiles!sessions_student_id_fkey(id, full_name, avatar_url)')
+        .select(`
+          student:student_id(
+            id,
+            full_name,
+            avatar_url
+          )
+        `)
         .eq('tutor_id', user.id);
 
       if (!error && data) {
         const uniqueStudents = Array.from(
           new Map(
             data
-              .map(session => session.profiles)
+              .map(session => session.student)
               .filter(Boolean)
               .map(profile => [profile.id, profile])
           ).values()
