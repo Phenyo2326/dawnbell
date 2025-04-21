@@ -18,7 +18,7 @@ const HeroSection = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button size="lg" className="group">
-              Explore Courses
+              Explore Subjects
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button size="lg" variant="outline">
@@ -28,7 +28,7 @@ const HeroSection = () => {
           <div className="flex flex-wrap gap-6 pt-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" />
-              <span>50+ Online Courses</span>
+              <span>12+ Subjects</span>
             </div>
             <div className="flex items-center gap-2">
               <GraduationCap className="h-5 w-5 text-primary" />
