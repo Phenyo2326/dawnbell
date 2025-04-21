@@ -12,9 +12,12 @@ interface Profile {
   avatar_url?: string;
 }
 
+// Supabase response can be an error or a valid profile
+type ProfileResponse = Profile | null;
+
 interface SessionWithProfile {
   student_id: string;
-  profiles?: Profile;
+  profiles: ProfileResponse;
 }
 
 const StudentsList = () => {
@@ -47,19 +50,23 @@ const StudentsList = () => {
         }
 
         if (data) {
-          // Extract unique student profiles from the sessions data
-          const validSessions = data.filter(
-            (session: SessionWithProfile) => session.profiles !== null
-          );
+          // Filter out sessions where profiles is null or an error
+          const validProfiles: Profile[] = [];
           
+          // Safely extract valid profiles
+          data.forEach((session: any) => {
+            // Check if profiles exists and has the expected structure
+            if (session.profiles && typeof session.profiles === 'object' && 'id' in session.profiles) {
+              validProfiles.push(session.profiles as Profile);
+            }
+          });
+          
+          // Remove duplicates by creating a Map with profile id as key
           const uniqueStudents = Array.from(
             new Map(
-              validSessions.map((session: SessionWithProfile) => [
-                session.profiles?.id, 
-                session.profiles
-              ]).filter(([id, profile]) => id && profile)
+              validProfiles.map(profile => [profile.id, profile])
             ).values()
-          ) as Profile[];
+          );
           
           setStudents(uniqueStudents);
         }
