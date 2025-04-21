@@ -12,21 +12,56 @@ export const useAuth = () => {
 
   useEffect(() => {
     // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        console.log('Auth state changed:', event);
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      console.log('Auth state changed:', event);
+      
+      // Update session and user state
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      
+      if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
       }
-    );
+      
+      setLoading(false);
+    });
 
     // Then check for existing session
     const checkSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setLoading(false);
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession) {
+          console.log('Existing session found for:', currentSession.user.email);
+          
+          // Force a token refresh if the session exists but might be close to expiring
+          if (currentSession.expires_at) {
+            const expiresAt = new Date(currentSession.expires_at * 1000);
+            const now = new Date();
+            const timeUntilExpiry = expiresAt.getTime() - now.getTime();
+            
+            // If token expires in less than 10 minutes, refresh it
+            if (timeUntilExpiry < 600000) {
+              console.log('Token close to expiry, refreshing...');
+              const { data } = await supabase.auth.refreshSession();
+              if (data.session) {
+                setSession(data.session);
+                setUser(data.session.user);
+              }
+            }
+          }
+        } else {
+          console.log('No existing session found');
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     checkSession();
