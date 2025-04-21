@@ -40,9 +40,8 @@ const StudentsList = () => {
           const uniqueStudents = Array.from(
             new Map(
               data
-                .map(session => session.profiles)
-                .filter(Boolean)
-                .map(profile => [profile.id, profile])
+                .filter(session => session.profiles) // Filter out any null profiles
+                .map(session => [session.profiles.id, session.profiles])
             ).values()
           );
           

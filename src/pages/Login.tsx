@@ -54,20 +54,42 @@ const Login = () => {
         toast.error('Error fetching user profile', {
           description: profileError.message
         });
-        setLoading(false);
-        return;
-      }
-
-      if (!profileData) {
-        toast.error('Profile not found');
-        // Sign out the user since profile doesn't exist
+        // Sign out the user since profile fetch failed
         await supabase.auth.signOut();
         setLoading(false);
         return;
       }
 
-      // Check if selected role matches profile role
-      if (profileData.role !== role) {
+      if (!profileData) {
+        // Profile not found - we need to create one based on auth metadata
+        const { data: userData } = await supabase.auth.getUser();
+        const userMeta = userData?.user?.user_metadata;
+        
+        if (userMeta) {
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: authData.user.id,
+              full_name: userMeta.full_name || 'User',
+              role: role
+            });
+            
+          if (insertError) {
+            toast.error('Failed to create profile', {
+              description: insertError.message
+            });
+            await supabase.auth.signOut();
+            setLoading(false);
+            return;
+          }
+        } else {
+          toast.error('Cannot create profile without user data');
+          await supabase.auth.signOut();
+          setLoading(false);
+          return;
+        }
+      } else if (profileData.role !== role) {
+        // Profile exists but role doesn't match
         toast.error('Invalid role selected', {
           description: 'Please select the correct role for your account'
         });
@@ -78,7 +100,7 @@ const Login = () => {
       }
 
       toast.success('Welcome back', {
-        description: `Logged in as ${profileData.full_name}`
+        description: `Logged in as ${profileData?.full_name || 'User'}`
       });
       
       // Redirect based on role
