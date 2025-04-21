@@ -6,9 +6,20 @@ import { useAuth } from '@/hooks/useAuth';
 import ChatInterface from '../chat/ChatInterface';
 import { Button } from '@/components/ui/button';
 
+interface Profile {
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+}
+
+interface SessionWithProfile {
+  student_id: string;
+  profiles?: Profile;
+}
+
 const StudentsList = () => {
   const { user } = useAuth();
-  const [students, setStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState<{ id: string; full_name: string } | null>(null);
 
@@ -36,14 +47,19 @@ const StudentsList = () => {
         }
 
         if (data) {
-          // Extract unique student profiles
+          // Extract unique student profiles from the sessions data
+          const validSessions = data.filter(
+            (session: SessionWithProfile) => session.profiles !== null
+          );
+          
           const uniqueStudents = Array.from(
             new Map(
-              data
-                .filter(session => session.profiles) // Filter out any null profiles
-                .map(session => [session.profiles.id, session.profiles])
+              validSessions.map((session: SessionWithProfile) => [
+                session.profiles?.id, 
+                session.profiles
+              ]).filter(([id, profile]) => id && profile)
             ).values()
-          );
+          ) as Profile[];
           
           setStudents(uniqueStudents);
         }
