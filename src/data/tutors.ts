@@ -92,6 +92,7 @@ export const subjects = [
   "Physics",
   "Chemistry",
   "Biology",
+  "English",
   "Computer Science",
   "English Literature",
   "Essay Writing",
@@ -102,3 +103,4 @@ export const subjects = [
   "Statistics",
   "Calculus"
 ];
+
