@@ -1,30 +1,7 @@
 
-export interface Tutor {
-  id: number;
-  name: string;
-  avatar: string;
-  subjects: string[];
-  rating: number;
-  reviews: number;
-  hourlyRate: number;
-  education: string;
-  availability: string;
-  description: string;
-}
+import { Tutor } from "@/data/tutors";
 
 export const tutors: Tutor[] = [
-  {
-    id: 1,
-    name: "Alex Thompson",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    subjects: ["Mathematics", "Calculus", "Statistics"],
-    rating: 4.9,
-    reviews: 124,
-    hourlyRate: 35,
-    education: "Ph.D. in Mathematics, MIT",
-    availability: "Weekdays, Evenings",
-    description: "Experienced math tutor specializing in advanced calculus and statistics. I focus on building strong foundations through practical examples."
-  },
   {
     id: 2,
     name: "Sophia Chen",
@@ -84,6 +61,18 @@ export const tutors: Tutor[] = [
     education: "B.A. in Linguistics, NYU",
     availability: "Weekdays, Evenings",
     description: "Conversational language tutor with immersive teaching methods. I make learning new languages fun and practical."
+  },
+  {
+    id: 7,
+    name: "Gift Tshekiso",
+    avatar: "https://randomuser.me/api/portraits/men/77.jpg",
+    subjects: ["Mathematics", "Calculus", "Statistics"],
+    rating: 4.7,
+    reviews: 89,
+    hourlyRate: 38,
+    education: "M.Sc. in Mathematics, University of Johannesburg",
+    availability: "Weekdays, Afternoons",
+    description: "Dedicated mathematics educator with a passion for helping students excel in complex mathematical concepts. I break down challenging topics into understandable segments."
   }
 ];
 
