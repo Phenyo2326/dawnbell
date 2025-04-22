@@ -1,5 +1,5 @@
 
-import { Facebook, Instagram, Twitter, Youtube, BookOpen, GraduationCap, Globe } from "lucide-react";
+import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -30,7 +30,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-lg mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Courses</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Subjects</a></li>
               <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Instructors</a></li>
               <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Learning Paths</a></li>
               <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Pricing</a></li>
@@ -51,8 +51,8 @@ const Footer = () => {
             <h4 className="font-semibold text-lg mb-4">Contact</h4>
             <ul className="space-y-2">
               <li className="text-gray-300">support@dawnbellacademy.com</li>
-              <li className="text-gray-300">+1 (800) LEARN-DB</li>
-              <li className="text-gray-300">123 Learning Lane<br />Education City, EC 12345</li>
+              <li className="text-gray-300">+26775060087</li>
+              <li className="text-gray-300">Gaborone City</li>
             </ul>
           </div>
         </div>
@@ -73,3 +73,4 @@ const Footer = () => {
 };
 
 export default Footer;
+
