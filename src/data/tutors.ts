@@ -1,5 +1,4 @@
-
-import { Tutor } from "@/data/tutors";
+import { Tutor } from "@/types/tutors";
 
 export const tutors: Tutor[] = [
   {
@@ -16,15 +15,15 @@ export const tutors: Tutor[] = [
   },
   {
     id: 3,
-    name: "Marcus Johnson",
-    avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-    subjects: ["Chemistry", "Biology"],
-    rating: 4.7,
-    reviews: 86,
-    hourlyRate: 30,
-    education: "B.S. in Chemistry, UC Berkeley",
+    name: "Katlego Darula",
+    avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+    subjects: ["Chemistry"],
+    rating: 4.6,
+    reviews: 82,
+    hourlyRate: 35,
+    education: "Ph.D. in Chemistry, University of Pretoria",
     availability: "Weekdays, Mornings",
-    description: "I make science fun and accessible, focusing on lab techniques and exam preparation strategies."
+    description: "Passionate chemistry educator with a focus on making complex chemical concepts accessible and engaging. I use interactive teaching methods to help students understand and excel."
   },
   {
     id: 4,
@@ -92,4 +91,3 @@ export const subjects = [
   "Statistics",
   "Calculus"
 ];
-
