@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Star, Clock, GraduationCap } from "lucide-react";
 import { Tutor } from "@/types/tutors";
@@ -32,7 +33,7 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
         .insert({
           student_id: user.id,
           tutor_id: tutor.id,
-          subject_id: tutor.subjects[0], // Using first subject for now
+          subject_id: String(tutor.subjects[0]), // Convert to string since subject_id is a string in DB
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           status: 'pending',
@@ -122,7 +123,7 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
-                className="rounded-md border"
+                className="rounded-md border pointer-events-auto"
                 disabled={(date) => date < new Date()}
               />
               <Button 

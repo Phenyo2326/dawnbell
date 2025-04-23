@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import EnrolledCourses from '@/components/student/EnrolledCourses';
 import UpcomingSessions from '@/components/student/UpcomingSessions';
+import TutorGrid from '@/components/TutorGrid';
 import { MessageSquare } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
@@ -51,26 +52,19 @@ const StudentDashboard = () => {
           <Button onClick={signOut} variant="outline">Sign Out</Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-2">
             <UpcomingSessions />
           </div>
           <div>
             <EnrolledCourses />
           </div>
-          <div className="md:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Messages
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Coming soon: Chat with your tutors</p>
-              </CardContent>
-            </Card>
-          </div>
+        </div>
+        
+        {/* Add Tutor Grid for booking sessions */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Find and Book Tutors</h2>
+          <TutorGrid />
         </div>
       </div>
     </div>
