@@ -1,13 +1,65 @@
-
 import { Button } from "@/components/ui/button";
 import { Star, Clock, GraduationCap } from "lucide-react";
-import { Tutor } from "@/data/tutors";
+import { Tutor } from "@/types/tutors";
+import { useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { addHours, format } from "date-fns";
 
 interface TutorCardProps {
   tutor: Tutor;
 }
 
 const TutorCard = ({ tutor }: TutorCardProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [isBooking, setIsBooking] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleBookSession = async () => {
+    if (!user || !selectedDate) return;
+
+    setIsBooking(true);
+    try {
+      const startTime = selectedDate;
+      const endTime = addHours(startTime, 1); // Default to 1-hour sessions
+
+      const { data, error } = await supabase
+        .from('sessions')
+        .insert({
+          student_id: user.id,
+          tutor_id: tutor.id,
+          subject_id: tutor.subjects[0], // Using first subject for now
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          status: 'pending',
+          payment_status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Session Booked!",
+        description: `Your session with ${tutor.name} has been scheduled for ${format(startTime, 'PPP')} at ${format(startTime, 'p')}`
+      });
+
+      setSelectedDate(undefined);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Booking Failed",
+        description: "There was an error booking your session. Please try again."
+      });
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
   return (
     <div className="tutor-card bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border">
       <div className="p-6">
@@ -55,9 +107,34 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
         <Button className="flex-1 rounded-none" variant="ghost">
           View Profile
         </Button>
-        <Button className="flex-1 rounded-none">
-          Book Session
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="flex-1 rounded-none">
+              Book Session
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Book a Session with {tutor.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                className="rounded-md border"
+                disabled={(date) => date < new Date()}
+              />
+              <Button 
+                className="w-full" 
+                onClick={handleBookSession}
+                disabled={!selectedDate || isBooking}
+              >
+                {isBooking ? "Booking..." : "Confirm Booking"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
