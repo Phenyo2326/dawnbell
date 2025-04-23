@@ -3,15 +3,15 @@ import { Tutor } from "@/types/tutors";
 export const tutors: Tutor[] = [
   {
     id: 2,
-    name: "Sophia Chen",
-    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-    subjects: ["Physics", "Computer Science"],
-    rating: 4.8,
-    reviews: 98,
-    hourlyRate: 40,
-    education: "M.S. in Computer Science, Stanford",
-    availability: "Weekends, Evenings",
-    description: "Passionate about making complex concepts simple. I teach with real-world examples to help you apply theory to practice."
+    name: "Marang Ngewa",
+    avatar: "https://randomuser.me/api/portraits/women/55.jpg",
+    subjects: ["Physics"],
+    rating: 4.7,
+    reviews: 92,
+    hourlyRate: 42,
+    education: "Ph.D. in Physics, University of Cape Town",
+    availability: "Weekdays, Evenings",
+    description: "Passionate physics educator dedicated to breaking down complex scientific concepts. I use interactive demonstrations and real-world applications to make physics engaging and accessible."
   },
   {
     id: 3,
