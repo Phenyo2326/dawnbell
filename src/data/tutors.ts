@@ -4,7 +4,7 @@ export const tutors: Tutor[] = [
   {
     id: 2,
     name: "Marang Ngewa",
-    avatar: "https://randomuser.me/api/portraits/women/55.jpg",
+    avatar: "/lovable-uploads/9408bb8a-f37b-4b73-ba9c-2121211ec896.png",
     subjects: ["Physics"],
     rating: 4.7,
     reviews: 92,
