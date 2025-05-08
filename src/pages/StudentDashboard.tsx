@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import EnrolledCourses from '@/components/student/EnrolledCourses';
 import UpcomingSessions from '@/components/student/UpcomingSessions';
 import TutorGrid from '@/components/TutorGrid';
+import SubjectsExplorer from '@/components/SubjectsExplorer';
 import { MessageSquare } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
@@ -14,6 +15,7 @@ const StudentDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -41,6 +43,15 @@ const StudentDashboard = () => {
     getProfile();
   }, [user, navigate]);
 
+  const handleSubjectSelect = (subject: string) => {
+    setSelectedSubject(subject);
+    // Auto-scroll to tutors section
+    const tutorsSection = document.getElementById('tutors-section');
+    if (tutorsSection) {
+      tutorsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -57,14 +68,16 @@ const StudentDashboard = () => {
             <UpcomingSessions />
           </div>
           <div>
-            <EnrolledCourses />
+            <SubjectsExplorer onSubjectSelect={handleSubjectSelect} />
           </div>
         </div>
         
         {/* Add Tutor Grid for booking sessions */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">Find and Book Tutors</h2>
-          <TutorGrid />
+        <div id="tutors-section" className="mt-8">
+          <h2 className="text-2xl font-semibold mb-4">
+            {selectedSubject ? `Tutors for ${selectedSubject}` : 'Find and Book Tutors'}
+          </h2>
+          <TutorGrid initialSubject={selectedSubject} />
         </div>
       </div>
     </div>

@@ -48,7 +48,7 @@ const TutorProfile = () => {
         .from('sessions')
         .insert({
           student_id: user.id,
-          tutor_id: tutor.id,
+          tutor_id: String(tutor.id), // Convert to string
           subject_id: String(tutor.subjects[0]), // Convert to string since subject_id is a string in DB
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),

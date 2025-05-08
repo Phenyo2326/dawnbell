@@ -1,13 +1,23 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { tutors, subjects } from "@/data/tutors";
 import TutorCard from "./TutorCard";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 
-const TutorGrid = () => {
-  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+interface TutorGridProps {
+  initialSubject?: string | null;
+}
+
+const TutorGrid = ({ initialSubject = null }: TutorGridProps) => {
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(initialSubject);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (initialSubject) {
+      setSelectedSubject(initialSubject);
+    }
+  }, [initialSubject]);
 
   const filteredTutors = tutors.filter(tutor => {
     // Apply subject filter
@@ -29,10 +39,8 @@ const TutorGrid = () => {
   });
 
   return (
-    <section className="py-16 px-6">
+    <section className="py-8">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-bold mb-8 text-center">Find Your Tutor</h2>
-        
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
