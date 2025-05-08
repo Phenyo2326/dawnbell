@@ -10,6 +10,7 @@ import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import StudentDashboard from "./pages/StudentDashboard";
 import TutorDashboard from "./pages/TutorDashboard";
+import TutorProfile from "./pages/TutorProfile";
 import { useAuth } from "./hooks/useAuth";
 import React, { Suspense } from "react";
 
@@ -53,6 +54,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <TutorDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/tutor-profile/:tutorId" 
+              element={
+                <ProtectedRoute>
+                  <TutorProfile />
                 </ProtectedRoute>
               } 
             />

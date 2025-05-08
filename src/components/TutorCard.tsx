@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Star, Clock, GraduationCap } from "lucide-react";
+import { Star, Clock } from "lucide-react";
 import { Tutor } from "@/types/tutors";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { addHours, format } from "date-fns";
+import { Link } from "react-router-dom";
 
 interface TutorCardProps {
   tutor: Tutor;
@@ -105,8 +106,14 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
       </div>
       
       <div className="flex border-t">
-        <Button className="flex-1 rounded-none" variant="ghost">
-          View Profile
+        <Button 
+          className="flex-1 rounded-none" 
+          variant="ghost"
+          asChild
+        >
+          <Link to={`/tutor-profile/${tutor.id}`}>
+            View Profile
+          </Link>
         </Button>
         <Dialog>
           <DialogTrigger asChild>
