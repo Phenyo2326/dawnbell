@@ -35,6 +35,21 @@ const UpcomingSessions = () => {
     fetchSessions();
   }, [user]);
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending</span>;
+      case 'confirmed':
+        return <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Confirmed</span>;
+      case 'cancelled':
+        return <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Cancelled</span>;
+      case 'completed':
+        return <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">Completed</span>;
+      default:
+        return <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">{status}</span>;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -46,7 +61,7 @@ const UpcomingSessions = () => {
         ) : sessions.length > 0 ? (
           <div className="space-y-4">
             {sessions.map((session) => (
-              <div key={session.id} className="p-3 bg-gray-50 rounded-lg">
+              <div key={session.id} className="p-4 bg-gray-50 rounded-lg border">
                 <p className="font-medium">{session.subjects.name}</p>
                 <p className="text-sm text-gray-600">
                   with {session.profiles.full_name}
@@ -54,6 +69,9 @@ const UpcomingSessions = () => {
                 <p className="text-sm text-gray-600">
                   {format(new Date(session.start_time), 'PPp')}
                 </p>
+                <div className="mt-1">
+                  {getStatusBadge(session.status)}
+                </div>
               </div>
             ))}
           </div>

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, ArrowLeft, Clock, GraduationCap, Calendar as CalendarIcon, MessageSquare } from "lucide-react";
+import { Star, ArrowLeft, Clock, GraduationCap, Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,7 @@ const TutorProfile = () => {
   const [tutor, setTutor] = useState<Tutor | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isBooking, setIsBooking] = useState(false);
+  const [bookedSessions, setBookedSessions] = useState<any[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -34,6 +35,23 @@ const TutorProfile = () => {
     }
     
     setTutor(foundTutor);
+
+    // Fetch booked sessions for this tutor
+    const fetchBookedSessions = async () => {
+      if (!tutorId) return;
+      
+      const { data, error } = await supabase
+        .from('sessions')
+        .select('start_time, end_time, status')
+        .eq('tutor_id', tutorId)
+        .neq('status', 'cancelled');
+      
+      if (!error && data) {
+        setBookedSessions(data);
+      }
+    };
+    
+    fetchBookedSessions();
   }, [tutorId, navigate]);
 
   const handleBookSession = async () => {
@@ -61,8 +79,8 @@ const TutorProfile = () => {
       if (error) throw error;
 
       toast({
-        title: "Session Booked!",
-        description: `Your session with ${tutor.name} has been scheduled for ${format(startTime, 'PPP')} at ${format(startTime, 'p')}`
+        title: "Session Request Sent!",
+        description: `Your session with ${tutor.name} has been requested for ${format(startTime, 'PPP')} at ${format(startTime, 'p')}. Wait for tutor confirmation.`
       });
 
       setSelectedDate(undefined);
@@ -75,6 +93,21 @@ const TutorProfile = () => {
     } finally {
       setIsBooking(false);
     }
+  };
+
+  // Function to check if a date is already booked
+  const isDateBooked = (date: Date) => {
+    return bookedSessions.some(session => {
+      const sessionStart = new Date(session.start_time);
+      const sessionEnd = new Date(session.end_time);
+      
+      // Check if the date falls within any booked session
+      const startHour = date.getHours();
+      const sessionStartHour = sessionStart.getHours();
+      
+      return date.toDateString() === sessionStart.toDateString() && 
+             startHour === sessionStartHour;
+    });
   };
 
   if (!tutor) {
@@ -130,19 +163,28 @@ const TutorProfile = () => {
                       <DialogTitle>Book a Session with {tutor.name}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Sessions are 1 hour long. Select a date and time to request a session.
+                        Your request will be pending until the tutor accepts it.
+                      </p>
                       <Calendar
                         mode="single"
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                         className="rounded-md border mx-auto pointer-events-auto"
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => {
+                          const now = new Date();
+                          const isPast = date < now;
+                          const isBooked = isDateBooked(date);
+                          return isPast || isBooked;
+                        }}
                       />
                       <Button 
                         className="w-full" 
                         onClick={handleBookSession}
                         disabled={!selectedDate || isBooking}
                       >
-                        {isBooking ? "Booking..." : "Confirm Booking"}
+                        {isBooking ? "Sending Request..." : "Request Session"}
                       </Button>
                     </div>
                   </DialogContent>
@@ -158,6 +200,7 @@ const TutorProfile = () => {
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="subjects">Subjects</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsTrigger value="availability">Availability</TabsTrigger>
               </TabsList>
               
               <TabsContent value="about" className="space-y-4">
@@ -216,6 +259,39 @@ const TutorProfile = () => {
                       </div>
                       
                       <p className="text-muted-foreground">Detailed reviews coming soon</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="availability">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Schedule</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">
+                      {tutor.availability}
+                    </p>
+                    <div className="bg-gray-50 p-4 rounded-lg text-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CalendarIcon className="h-4 w-4 text-primary" />
+                        <span className="font-medium">Booking Status Legend:</span>
+                      </div>
+                      <ul className="space-y-2">
+                        <li className="flex items-center gap-2">
+                          <span className="w-3 h-3 bg-yellow-300 rounded-full"></span>
+                          <span>Pending approval</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-3 h-3 bg-green-500 rounded-full"></span>
+                          <span>Confirmed sessions</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-3 h-3 bg-gray-300 rounded-full"></span>
+                          <span>Unavailable time slots</span>
+                        </li>
+                      </ul>
                     </div>
                   </CardContent>
                 </Card>

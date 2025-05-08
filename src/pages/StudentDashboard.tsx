@@ -5,8 +5,6 @@ import EnrolledCourses from '@/components/student/EnrolledCourses';
 import UpcomingSessions from '@/components/student/UpcomingSessions';
 import TutorGrid from '@/components/TutorGrid';
 import SubjectsExplorer from '@/components/SubjectsExplorer';
-import { MessageSquare } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
