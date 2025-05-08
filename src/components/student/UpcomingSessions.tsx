@@ -4,36 +4,68 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 const UpcomingSessions = () => {
   const { user } = useAuth();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchSessions = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('sessions')
+      .select(`
+        *,
+        subjects(name),
+        profiles!sessions_tutor_id_fkey(full_name)
+      `)
+      .eq('student_id', user.id)
+      .gte('start_time', new Date().toISOString())
+      .order('start_time', { ascending: true })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching sessions:', error);
+    }
+    
+    if (data) {
+      console.log('Fetched sessions:', data);
+      setSessions(data);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchSessions = async () => {
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('sessions')
-        .select(`
-          *,
-          subjects(name),
-          profiles!sessions_tutor_id_fkey(full_name)
-        `)
-        .eq('student_id', user.id)
-        .gte('start_time', new Date().toISOString())
-        .order('start_time', { ascending: true })
-        .limit(5);
-
-      if (!error && data) {
-        setSessions(data);
-      }
-      setLoading(false);
-    };
-
     fetchSessions();
   }, [user]);
+
+  const handleCancelSession = async (sessionId: string) => {
+    const { error } = await supabase
+      .from('sessions')
+      .update({ status: 'cancelled' })
+      .eq('id', sessionId);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Cancellation Failed",
+        description: "There was an error cancelling your session."
+      });
+      return;
+    }
+
+    toast({
+      title: "Session Cancelled",
+      description: "Your tutoring session has been cancelled."
+    });
+
+    // Refresh sessions
+    fetchSessions();
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -62,15 +94,29 @@ const UpcomingSessions = () => {
           <div className="space-y-4">
             {sessions.map((session) => (
               <div key={session.id} className="p-4 bg-gray-50 rounded-lg border">
-                <p className="font-medium">{session.subjects.name}</p>
+                <p className="font-medium">
+                  {session.subjects?.name || "Subject Not Available"}
+                </p>
                 <p className="text-sm text-gray-600">
-                  with {session.profiles.full_name}
+                  with {session.profiles?.full_name || "Unknown Tutor"}
                 </p>
                 <p className="text-sm text-gray-600">
                   {format(new Date(session.start_time), 'PPp')}
                 </p>
-                <div className="mt-1">
-                  {getStatusBadge(session.status)}
+                <div className="flex items-center justify-between mt-2">
+                  <div>
+                    {getStatusBadge(session.status)}
+                  </div>
+                  {session.status === 'pending' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => handleCancelSession(session.id)}
+                    >
+                      Cancel
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

@@ -4,7 +4,7 @@ import { Star, Clock } from "lucide-react";
 import { Tutor } from "@/types/tutors";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,31 +17,53 @@ interface TutorCardProps {
 
 const TutorCard = ({ tutor }: TutorCardProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("9:00");
   const [isBooking, setIsBooking] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const availableTimes = [
+    "9:00", "10:00", "11:00", "12:00", "13:00", 
+    "14:00", "15:00", "16:00", "17:00", "18:00"
+  ];
+
   const handleBookSession = async () => {
-    if (!user || !selectedDate) return;
+    if (!user || !selectedDate) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please select a date and time for your session."
+      });
+      return;
+    }
 
     setIsBooking(true);
     try {
-      const startTime = selectedDate;
+      // Parse the selected time to set hours and minutes
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const startTime = new Date(selectedDate);
+      startTime.setHours(hours, minutes, 0, 0);
+      
       const endTime = addHours(startTime, 1); // Default to 1-hour sessions
+
+      // Check if we have subject data
+      const subjectId = typeof tutor.subjects[0] === 'string' 
+        ? tutor.subjects[0] 
+        : String(tutor.subjects[0]);
 
       const { data, error } = await supabase
         .from('sessions')
         .insert({
           student_id: user.id,
-          tutor_id: String(tutor.id), // Convert to string
-          subject_id: String(tutor.subjects[0]), // Convert to string since subject_id is a string in DB
+          tutor_id: String(tutor.id),
+          subject_id: subjectId,
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           status: 'pending',
           payment_status: 'pending'
         })
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
 
@@ -51,7 +73,9 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
       });
 
       setSelectedDate(undefined);
+      setDialogOpen(false);
     } catch (error) {
+      console.error("Booking error:", error);
       toast({
         variant: "destructive",
         title: "Booking Failed",
@@ -115,7 +139,7 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
             View Profile
           </Link>
         </Button>
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex-1 rounded-none">
               Book Session
@@ -124,6 +148,9 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Book a Session with {tutor.name}</DialogTitle>
+              <DialogDescription>
+                Select a date and time for your tutoring session
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <Calendar
@@ -133,6 +160,24 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
                 className="rounded-md border pointer-events-auto"
                 disabled={(date) => date < new Date()}
               />
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Select Time</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {availableTimes.map((time) => (
+                    <Button
+                      key={time}
+                      type="button"
+                      variant={selectedTime === time ? "default" : "outline"}
+                      onClick={() => setSelectedTime(time)}
+                      size="sm"
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
               <Button 
                 className="w-full" 
                 onClick={handleBookSession}

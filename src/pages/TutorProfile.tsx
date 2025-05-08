@@ -5,7 +5,7 @@ import { tutors } from "@/data/tutors";
 import { Tutor } from "@/types/tutors";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,10 +20,17 @@ const TutorProfile = () => {
   const navigate = useNavigate();
   const [tutor, setTutor] = useState<Tutor | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("9:00");
   const [isBooking, setIsBooking] = useState(false);
   const [bookedSessions, setBookedSessions] = useState<any[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const availableTimes = [
+    "9:00", "10:00", "11:00", "12:00", "13:00", 
+    "14:00", "15:00", "16:00", "17:00", "18:00"
+  ];
 
   useEffect(() => {
     // Find the tutor based on the ID from URL params
@@ -55,28 +62,46 @@ const TutorProfile = () => {
   }, [tutorId, navigate]);
 
   const handleBookSession = async () => {
-    if (!user || !selectedDate || !tutor) return;
+    if (!user || !selectedDate || !tutor) {
+      toast({
+        variant: "destructive",
+        title: "Missing information",
+        description: "Please select a date and time for your session."
+      });
+      return;
+    }
 
     setIsBooking(true);
     try {
-      const startTime = selectedDate;
+      // Parse the selected time to set hours and minutes
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const startTime = new Date(selectedDate);
+      startTime.setHours(hours, minutes, 0, 0);
+      
       const endTime = addHours(startTime, 1); // Default to 1-hour sessions
+
+      // Check if we have subject data
+      const subjectId = typeof tutor.subjects[0] === 'string' 
+        ? tutor.subjects[0] 
+        : String(tutor.subjects[0]);
 
       const { data, error } = await supabase
         .from('sessions')
         .insert({
           student_id: user.id,
-          tutor_id: String(tutor.id), // Convert to string
-          subject_id: String(tutor.subjects[0]), // Convert to string since subject_id is a string in DB
+          tutor_id: String(tutor.id),
+          subject_id: subjectId,
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           status: 'pending',
           payment_status: 'pending'
         })
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Booking insertion error:", error);
+        throw error;
+      }
 
       toast({
         title: "Session Request Sent!",
@@ -84,7 +109,21 @@ const TutorProfile = () => {
       });
 
       setSelectedDate(undefined);
+      setDialogOpen(false);
+      
+      // Refresh booked sessions
+      const { data: updatedSessions, error: fetchError } = await supabase
+        .from('sessions')
+        .select('start_time, end_time, status')
+        .eq('tutor_id', tutorId)
+        .neq('status', 'cancelled');
+      
+      if (!fetchError && updatedSessions) {
+        setBookedSessions(updatedSessions);
+      }
+      
     } catch (error) {
+      console.error("Booking error:", error);
       toast({
         variant: "destructive",
         title: "Booking Failed",
@@ -152,7 +191,7 @@ const TutorProfile = () => {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold">${tutor.hourlyRate}/hr</div>
-                <Dialog>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button className="mt-2">
                       Book Session
@@ -161,12 +200,12 @@ const TutorProfile = () => {
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Book a Session with {tutor.name}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
+                      <DialogDescription>
                         Sessions are 1 hour long. Select a date and time to request a session.
                         Your request will be pending until the tutor accepts it.
-                      </p>
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
                       <Calendar
                         mode="single"
                         selected={selectedDate}
@@ -175,10 +214,27 @@ const TutorProfile = () => {
                         disabled={(date) => {
                           const now = new Date();
                           const isPast = date < now;
-                          const isBooked = isDateBooked(date);
-                          return isPast || isBooked;
+                          return isPast;
                         }}
                       />
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Select Time</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {availableTimes.map((time) => (
+                            <Button
+                              key={time}
+                              type="button"
+                              variant={selectedTime === time ? "default" : "outline"}
+                              onClick={() => setSelectedTime(time)}
+                              size="sm"
+                            >
+                              {time}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      
                       <Button 
                         className="w-full" 
                         onClick={handleBookSession}
