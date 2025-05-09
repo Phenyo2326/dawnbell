@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { Calendar } from 'lucide-react';
 
 const UpcomingSessions = () => {
   const { user } = useAuth();
@@ -85,7 +86,10 @@ const UpcomingSessions = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">Upcoming Sessions</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          Upcoming Sessions
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (

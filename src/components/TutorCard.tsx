@@ -29,11 +29,20 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
   ];
 
   const handleBookSession = async () => {
-    if (!user || !selectedDate) {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to book a session."
+      });
+      return;
+    }
+    
+    if (!selectedDate) {
       toast({
         variant: "destructive",
         title: "Missing information",
-        description: "Please select a date and time for your session."
+        description: "Please select a date for your session."
       });
       return;
     }
@@ -51,6 +60,14 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
       const subjectId = typeof tutor.subjects[0] === 'string' 
         ? tutor.subjects[0] 
         : String(tutor.subjects[0]);
+
+      console.log("Booking session with:", {
+        student_id: user.id,
+        tutor_id: String(tutor.id),
+        subject_id: subjectId,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+      });
 
       const { data, error } = await supabase
         .from('sessions')
@@ -156,7 +173,10 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                onSelect={setSelectedDate}
+                onSelect={(date) => {
+                  console.log("Selected date:", date);
+                  setSelectedDate(date);
+                }}
                 className="rounded-md border pointer-events-auto"
                 disabled={(date) => date < new Date()}
               />
