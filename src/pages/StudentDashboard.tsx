@@ -5,15 +5,18 @@ import EnrolledCourses from '@/components/student/EnrolledCourses';
 import UpcomingSessions from '@/components/student/UpcomingSessions';
 import TutorGrid from '@/components/TutorGrid';
 import SubjectsExplorer from '@/components/SubjectsExplorer';
+import StudyMaterialsList from '@/components/student/StudyMaterialsList';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { Book } from 'lucide-react';
 
 const StudentDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'tutors' | 'materials'>('tutors');
 
   useEffect(() => {
     const getProfile = async () => {
@@ -43,6 +46,7 @@ const StudentDashboard = () => {
 
   const handleSubjectSelect = (subject: string) => {
     setSelectedSubject(subject);
+    setActiveTab('tutors');
     // Auto-scroll to tutors section
     const tutorsSection = document.getElementById('tutors-section');
     if (tutorsSection) {
@@ -70,12 +74,40 @@ const StudentDashboard = () => {
           </div>
         </div>
         
-        {/* Add Tutor Grid for booking sessions */}
+        {/* Study Materials Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Study Materials</h2>
+          <StudyMaterialsList />
+        </div>
+        
+        {/* Tabs for booking tutors or accessing materials */}
         <div id="tutors-section" className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">
-            {selectedSubject ? `Tutors for ${selectedSubject}` : 'Find and Book Tutors'}
-          </h2>
-          <TutorGrid initialSubject={selectedSubject} />
+          <div className="flex flex-wrap gap-4 mb-6">
+            <Button 
+              variant={activeTab === 'tutors' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('tutors')}
+              className="gap-2"
+            >
+              Find Tutors
+            </Button>
+            <Button 
+              variant={activeTab === 'materials' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('materials')}
+              className="gap-2"
+            >
+              <Book className="h-4 w-4" />
+              Resources
+            </Button>
+          </div>
+          
+          {activeTab === 'tutors' && (
+            <>
+              <h2 className="text-2xl font-semibold mb-4">
+                {selectedSubject ? `Tutors for ${selectedSubject}` : 'Find and Book Tutors'}
+              </h2>
+              <TutorGrid initialSubject={selectedSubject} />
+            </>
+          )}
         </div>
       </div>
     </div>

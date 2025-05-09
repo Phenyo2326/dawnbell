@@ -112,6 +112,53 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          payment_method: string
+          payment_status: string
+          session_id: string
+          student_id: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_method: string
+          payment_status: string
+          session_id: string
+          student_id: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_method?: string
+          payment_status?: string
+          session_id?: string
+          student_id?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -232,6 +279,7 @@ export type Database = {
       }
       sessions: {
         Row: {
+          completed_at: string | null
           created_at: string | null
           end_time: string
           id: string
@@ -240,10 +288,12 @@ export type Database = {
           status: string
           student_id: string
           subject_id: string
+          tutor_feedback: string | null
           tutor_id: string
           updated_at: string | null
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string | null
           end_time: string
           id?: string
@@ -252,10 +302,12 @@ export type Database = {
           status: string
           student_id: string
           subject_id: string
+          tutor_feedback?: string | null
           tutor_id: string
           updated_at?: string | null
         }
         Update: {
+          completed_at?: string | null
           created_at?: string | null
           end_time?: string
           id?: string
@@ -264,12 +316,60 @@ export type Database = {
           status?: string
           student_id?: string
           subject_id?: string
+          tutor_feedback?: string | null
           tutor_id?: string
           updated_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "sessions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_materials: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          subject_id: string
+          title: string
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          subject_id: string
+          title: string
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          subject_id?: string
+          title?: string
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_materials_subject_id_fkey"
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
