@@ -1,238 +1,156 @@
-
-import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { Calendar, CreditCard, X, CheckCircle, MessageSquare } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import PaymentForm from './PaymentForm';
+import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock, DollarSign } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import PaymentForm from "./PaymentForm";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const UpcomingSessions = () => {
-  const { user } = useAuth();
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
-  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
-  const { toast } = useToast();
-
-  const fetchSessions = async () => {
-    if (!user) return;
-    
-    const { data, error } = await supabase
-      .from('sessions')
-      .select(`
-        *,
-        subjects(name),
-        profiles!sessions_tutor_id_fkey(full_name)
-      `)
-      .eq('student_id', user.id)
-      .gte('start_time', new Date().toISOString())
-      .order('start_time', { ascending: true })
-      .limit(5);
-
-    if (error) {
-      console.error('Error fetching sessions:', error);
-    }
-    
-    if (data) {
-      console.log('Fetched sessions:', data);
-      setSessions(data);
-    }
-    setLoading(false);
-  };
+  const { user } = useAuth();
 
   useEffect(() => {
+    const fetchSessions = async () => {
+      if (!user?.id) return;
+      
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          tutors:tutor_id (
+            name,
+            avatar
+          ),
+          subjects:subject_id (
+            name
+          )
+        `)
+        .eq('student_id', user.id)
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true })
+        .limit(5);
+      
+      if (error) {
+        console.error('Error fetching sessions:', error);
+      } else {
+        setSessions(data || []);
+      }
+      setLoading(false);
+    };
+
     fetchSessions();
   }, [user]);
 
-  const handleCancelSession = async (sessionId: string) => {
-    const { error } = await supabase
-      .from('sessions')
-      .update({ status: 'cancelled' })
-      .eq('id', sessionId);
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Cancellation Failed",
-        description: "There was an error cancelling your session."
-      });
-      return;
-    }
-
-    toast({
-      title: "Session Cancelled",
-      description: "Your tutoring session has been cancelled."
-    });
-
-    // Refresh sessions
-    fetchSessions();
-  };
-
-  const handlePaymentRequest = (session: any) => {
-    setSelectedSession(session);
-    setShowPaymentDialog(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    setShowPaymentDialog(false);
-    setSelectedSession(null);
-    fetchSessions();
-  };
-
-  const handleViewFeedback = (session: any) => {
-    setSelectedSession(session);
-    setShowFeedbackDialog(true);
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Pending</span>;
       case 'confirmed':
-        return <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Confirmed</span>;
+        return <Badge className="bg-green-500">Confirmed</Badge>;
+      case 'pending':
+        return <Badge variant="secondary">Pending</Badge>;
       case 'cancelled':
-        return <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Cancelled</span>;
-      case 'completed':
-        return <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">Completed</span>;
+        return <Badge variant="destructive">Cancelled</Badge>;
       default:
-        return <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">{status}</span>;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const getPaymentBadge = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Paid</span>;
-      case 'pending':
-        return <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Payment Required</span>;
-      default:
-        return <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">{status}</span>;
-    }
+  const handlePayment = (sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId);
+    setSelectedSession(session);
+    setPaymentModalOpen(true);
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            Upcoming Sessions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p>Loading sessions...</p>
-          ) : sessions.length > 0 ? (
-            <div className="space-y-4">
-              {sessions.map((session) => (
-                <div key={session.id} className="p-4 bg-gray-50 rounded-lg border">
-                  <p className="font-medium">
-                    {session.subjects?.name || "Subject Not Available"}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    with {session.profiles?.full_name || "Unknown Tutor"}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {format(new Date(session.start_time), 'PPP')} at {format(new Date(session.start_time), 'p')}
-                  </p>
-                  <div className="flex items-center mt-2 gap-2">
-                    <div>
-                      {getStatusBadge(session.status)}
-                    </div>
-                    {session.payment_status && (
-                      <div>{getPaymentBadge(session.payment_status)}</div>
-                    )}
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5" />
+          Upcoming Sessions
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p>Loading your sessions...</p>
+        ) : sessions.length > 0 ? (
+          <div className="space-y-4">
+            {sessions.map((session) => (
+              <div 
+                key={session.id} 
+                className="flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={session.tutors?.avatar} alt={session.tutors?.name} />
+                  <AvatarFallback>{session.tutors?.name?.charAt(0) || 'T'}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="font-medium">{session.tutors?.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {session.subjects?.name}
                   </div>
-                  
-                  <div className="flex items-center justify-between mt-3">
-                    <div>
-                      {session.status === 'pending' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-xs"
-                          onClick={() => handleCancelSession(session.id)}
-                        >
-                          <X className="h-3 w-3 mr-1" /> Cancel
-                        </Button>
-                      )}
-                      
-                      {session.status === 'confirmed' && session.payment_status === 'pending' && (
-                        <Button 
-                          size="sm" 
-                          className="text-xs bg-green-500 hover:bg-green-600"
-                          onClick={() => handlePaymentRequest(session)}
-                        >
-                          <CreditCard className="h-3 w-3 mr-1" /> Pay Now
-                        </Button>
-                      )}
-                      
-                      {session.status === 'completed' && session.tutor_feedback && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-xs"
-                          onClick={() => handleViewFeedback(session)}
-                        >
-                          <MessageSquare className="h-3 w-3 mr-1" /> View Feedback
-                        </Button>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-2 mt-1 text-xs">
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {format(new Date(session.start_time), 'PPP')} at {format(new Date(session.start_time), 'p')}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-600">No upcoming sessions</p>
-          )}
-        </CardContent>
-      </Card>
+                <div className="flex flex-col items-end gap-2">
+                  {getStatusBadge(session.status)}
+                  {session.payment_status === 'pending' && session.status === 'confirmed' && (
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handlePayment(session.id)}
+                      className="gap-1"
+                    >
+                      <DollarSign className="h-3 w-3" />
+                      Pay
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <p className="text-muted-foreground">No upcoming sessions</p>
+            <Button className="mt-2" variant="outline" onClick={() => window.location.href = '#tutors-section'}>
+              Find a Tutor
+            </Button>
+          </div>
+        )}
+      </CardContent>
 
-      {/* Payment Dialog */}
-      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Complete Payment</DialogTitle>
-          </DialogHeader>
+      <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
+        <DialogContent>
           {selectedSession && (
             <PaymentForm 
               sessionId={selectedSession.id} 
-              amount={25} // In a real app, this would come from the session or subject data
-              onSuccess={handlePaymentSuccess}
-              onCancel={() => setShowPaymentDialog(false)}
+              amount={99.99}
+              onPaymentComplete={() => {
+                // Update the session status
+                const updatedSessions = sessions.map(s => 
+                  s.id === selectedSession.id 
+                    ? {...s, payment_status: 'paid'} 
+                    : s
+                );
+                setSessions(updatedSessions);
+                setPaymentModalOpen(false);
+              }}
             />
           )}
         </DialogContent>
       </Dialog>
-      
-      {/* Feedback Dialog */}
-      <Dialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Tutor Feedback</DialogTitle>
-          </DialogHeader>
-          {selectedSession && selectedSession.tutor_feedback && (
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-start gap-3">
-                <MessageSquare className="h-5 w-5 text-primary mt-1" />
-                <div>
-                  <p className="text-sm font-medium mb-1">Feedback from {selectedSession.profiles?.full_name}</p>
-                  <p className="text-sm">{selectedSession.tutor_feedback}</p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Completed on {selectedSession.completed_at ? format(new Date(selectedSession.completed_at), 'PPP') : 'N/A'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+    </Card>
   );
 };
 

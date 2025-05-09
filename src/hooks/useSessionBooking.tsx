@@ -6,10 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { addHours, format } from "date-fns";
 import { Tutor } from "@/types/tutors";
 
-export const useSessionBooking = (tutor: Tutor, onComplete?: () => void) => {
+export const useSessionBooking = (tutor: Tutor | null, onComplete?: () => void) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("9:00");
   const [isBooking, setIsBooking] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [bookedSessions, setBookedSessions] = useState<any[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -19,13 +20,13 @@ export const useSessionBooking = (tutor: Tutor, onComplete?: () => void) => {
     "14:00", "15:00", "16:00", "17:00", "18:00"
   ];
 
-  const fetchBookedSessions = async (tutorId: number | string) => {
+  const fetchBookedSessions = async (tutorId: string | number) => {
     if (!tutorId) return;
     
     const { data, error } = await supabase
       .from('sessions')
       .select('start_time, end_time, status')
-      .eq('tutor_id', tutorId)
+      .eq('tutor_id', String(tutorId))
       .neq('status', 'cancelled');
     
     if (!error && data) {
@@ -139,6 +140,8 @@ export const useSessionBooking = (tutor: Tutor, onComplete?: () => void) => {
     selectedTime,
     setSelectedTime,
     isBooking,
+    dialogOpen,
+    setDialogOpen,
     bookedSessions,
     fetchBookedSessions,
     handleBookSession,
