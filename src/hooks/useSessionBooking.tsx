@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { addHours, format } from "date-fns";
 import { Tutor } from "@/types/tutors";
+import { useNavigate } from "react-router-dom";
 
 export const useSessionBooking = (tutor: Tutor | null, onComplete?: () => void) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -14,6 +15,7 @@ export const useSessionBooking = (tutor: Tutor | null, onComplete?: () => void) 
   const [bookedSessions, setBookedSessions] = useState<any[]>([]);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const availableTimes = [
     "9:00", "10:00", "11:00", "12:00", "13:00", 
@@ -41,6 +43,8 @@ export const useSessionBooking = (tutor: Tutor | null, onComplete?: () => void) 
         title: "Authentication required",
         description: "Please sign in to book a session."
       });
+      // Redirect to login page
+      navigate("/login");
       return;
     }
     

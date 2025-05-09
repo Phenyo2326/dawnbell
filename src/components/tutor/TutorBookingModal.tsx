@@ -5,6 +5,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tutor } from "@/types/tutors";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
 
 interface TutorBookingModalProps {
   tutor: Tutor;
@@ -27,13 +28,16 @@ const TutorBookingModal = ({
   handleBookSession,
   availableTimes
 }: TutorBookingModalProps) => {
+  const { user } = useAuth();
+
   return (
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Book a Session with {tutor.name}</DialogTitle>
         <DialogDescription>
-          Sessions are 1 hour long. Select a date and time to request a session.
-          Your request will be pending until the tutor accepts it.
+          {user 
+            ? "Sessions are 1 hour long. Select a date and time to request a session. Your request will be pending until the tutor accepts it."
+            : "You'll need to log in before booking a session"}
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
@@ -74,7 +78,7 @@ const TutorBookingModal = ({
           onClick={handleBookSession}
           disabled={!selectedDate || isBooking}
         >
-          {isBooking ? "Sending Request..." : "Request Session"}
+          {isBooking ? "Sending Request..." : user ? "Request Session" : "Sign In & Book"}
         </Button>
       </div>
     </DialogContent>

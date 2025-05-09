@@ -11,6 +11,7 @@ import {
   DialogTrigger 
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
 
 interface TutorBookingDialogProps {
   tutorName: string;
@@ -37,6 +38,8 @@ const TutorBookingDialog = ({
   dialogOpen,
   setDialogOpen
 }: TutorBookingDialogProps) => {
+  const { user } = useAuth();
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
@@ -48,7 +51,9 @@ const TutorBookingDialog = ({
         <DialogHeader>
           <DialogTitle>Book a Session with {tutorName}</DialogTitle>
           <DialogDescription>
-            Select a date and time for your tutoring session
+            {user 
+              ? "Select a date and time for your tutoring session" 
+              : "You'll need to log in before booking a session"}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -85,7 +90,7 @@ const TutorBookingDialog = ({
             onClick={handleBookSession}
             disabled={!selectedDate || isBooking}
           >
-            {isBooking ? "Booking..." : "Confirm Booking"}
+            {isBooking ? "Booking..." : user ? "Confirm Booking" : "Sign In & Book"}
           </Button>
         </div>
       </DialogContent>
