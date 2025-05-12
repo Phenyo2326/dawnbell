@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 import TutorBookingDialog from "./TutorBookingDialog";
+import TutorLoginInfo from "./TutorLoginInfo";
+import { Tutor } from "@/types/tutors";
 
 interface TutorCardFooterProps {
   tutorId: number;
@@ -20,6 +22,7 @@ interface TutorCardFooterProps {
   handleBookSession: () => Promise<void>;
   dialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
+  tutor?: Tutor;
 }
 
 const TutorCardFooter = ({
@@ -35,10 +38,13 @@ const TutorCardFooter = ({
   isBooking,
   handleBookSession,
   dialogOpen,
-  setDialogOpen
+  setDialogOpen,
+  tutor
 }: TutorCardFooterProps) => {
   return (
     <>
+      {tutor && <TutorLoginInfo tutor={tutor} showInfo={true} />}
+      
       <div className="flex flex-wrap items-center gap-4 mt-4 text-sm">
         <div className="flex items-center gap-1">
           <Clock className="h-4 w-4 text-primary" />

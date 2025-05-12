@@ -57,6 +57,7 @@ const TutorCard = ({ tutor }: TutorCardProps) => {
           handleBookSession={handleBookSession}
           dialogOpen={dialogOpen}
           setDialogOpen={setDialogOpen}
+          tutor={tutor}
         />
       </div>
     </div>

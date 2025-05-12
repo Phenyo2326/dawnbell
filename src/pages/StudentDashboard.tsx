@@ -6,17 +6,19 @@ import UpcomingSessions from '@/components/student/UpcomingSessions';
 import TutorGrid from '@/components/TutorGrid';
 import SubjectsExplorer from '@/components/SubjectsExplorer';
 import StudyMaterialsList from '@/components/student/StudyMaterialsList';
+import TutorsList from '@/components/TutorsList';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Book } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const StudentDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'tutors' | 'materials'>('tutors');
+  const [activeTab, setActiveTab] = useState<'tutors' | 'materials' | 'accounts'>('tutors');
 
   useEffect(() => {
     const getProfile = async () => {
@@ -54,6 +56,8 @@ const StudentDashboard = () => {
     }
   };
 
+  const isDevelopment = process.env.NODE_ENV === 'development';
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -64,6 +68,27 @@ const StudentDashboard = () => {
           </div>
           <Button onClick={signOut} variant="outline">Sign Out</Button>
         </div>
+
+        {isDevelopment && (
+          <Card className="mb-6 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="text-blue-800">Development Environment Detected</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-blue-700 mb-2">
+                All tutors have been created in the Supabase database and can be accessed with these credentials:
+              </p>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-blue-800">
+                <li>marang.ngewa@dawnbell.edu / Dawnbell2023!</li>
+                <li>katlego.darula@dawnbell.edu / Dawnbell2023!</li>
+                <li>priya.patel@dawnbell.edu / Dawnbell2023!</li>
+                <li>david.wilson@dawnbell.edu / Dawnbell2023!</li>
+                <li>jasmine.williams@dawnbell.edu / Dawnbell2023!</li>
+                <li>gift.tshekiso@dawnbell.edu / Dawnbell2023!</li>
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="md:col-span-2">
@@ -98,6 +123,15 @@ const StudentDashboard = () => {
               <Book className="h-4 w-4" />
               Resources
             </Button>
+            {isDevelopment && (
+              <Button 
+                variant={activeTab === 'accounts' ? 'default' : 'outline'}
+                onClick={() => setActiveTab('accounts')}
+                className="gap-2"
+              >
+                Tutor Accounts
+              </Button>
+            )}
           </div>
           
           {activeTab === 'tutors' && (
@@ -107,6 +141,14 @@ const StudentDashboard = () => {
               </h2>
               <TutorGrid initialSubject={selectedSubject} />
             </>
+          )}
+
+          {activeTab === 'materials' && (
+            <StudyMaterialsList />
+          )}
+
+          {activeTab === 'accounts' && isDevelopment && (
+            <TutorsList />
           )}
         </div>
       </div>

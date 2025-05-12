@@ -6,6 +6,8 @@ import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/c
 import { Tutor } from "@/types/tutors";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 interface TutorBookingModalProps {
   tutor: Tutor;
@@ -30,6 +32,9 @@ const TutorBookingModal = ({
 }: TutorBookingModalProps) => {
   const { user } = useAuth();
 
+  // Display tutor login credentials if we're on the local development environment
+  const showDevCredentials = process.env.NODE_ENV === 'development';
+
   return (
     <DialogContent>
       <DialogHeader>
@@ -41,6 +46,17 @@ const TutorBookingModal = ({
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
+        {showDevCredentials && (
+          <Alert className="bg-blue-50 border-blue-200">
+            <InfoIcon className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-xs text-blue-800">
+              <p><strong>Developer Note:</strong> To log in as this tutor:</p>
+              <p>Email: {tutor.name.toLowerCase().replace(' ', '.')}@dawnbell.edu</p>
+              <p>Password: Dawnbell2023!</p>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Calendar
           mode="single"
           selected={selectedDate}
