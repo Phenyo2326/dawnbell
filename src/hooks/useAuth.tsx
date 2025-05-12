@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +24,8 @@ export const useAuth = () => {
         console.log('User signed out');
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed successfully');
+      } else if (event === 'SIGNED_IN') {
+        console.log('User signed in successfully');
       }
       
       setLoading(false);
@@ -47,8 +50,13 @@ export const useAuth = () => {
             // If token expires in less than 10 minutes, refresh it
             if (timeUntilExpiry < 600000) {
               console.log('Token close to expiry, refreshing...');
-              const { data } = await supabase.auth.refreshSession();
-              if (data.session) {
+              const { data, error } = await supabase.auth.refreshSession();
+              
+              if (error) {
+                console.error('Error refreshing token:', error);
+                // Don't logout automatically, just log the error
+              } else if (data.session) {
+                console.log('Session refreshed successfully');
                 setSession(data.session);
                 setUser(data.session.user);
               }
@@ -73,8 +81,20 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+        toast.error('Error signing out', { 
+          description: error.message 
+        });
+      } else {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Unexpected error during sign out:', error);
+      toast.error('An unexpected error occurred while signing out');
+    }
   };
 
   return { user, session, loading, signOut };
