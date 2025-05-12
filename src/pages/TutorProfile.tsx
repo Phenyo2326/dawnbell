@@ -10,7 +10,6 @@ import TutorHeader from "@/components/tutor/TutorHeader";
 import TutorBookingModal from "@/components/tutor/TutorBookingModal";
 import TutorDetailTabs from "@/components/tutor/TutorDetailTabs";
 import { useSessionBooking } from "@/hooks/useSessionBooking";
-import TutorLoginInfo from "@/components/tutor/TutorLoginInfo";
 
 const TutorProfile = () => {
   const { tutorId } = useParams();
@@ -63,8 +62,6 @@ const TutorProfile = () => {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Button>
-
-        <TutorLoginInfo tutor={tutor} showInfo={true} />
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           {/* Tutor header component */}

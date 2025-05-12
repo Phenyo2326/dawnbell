@@ -213,21 +213,6 @@ const Login = () => {
           </Button>
         </form>
         
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-4 border border-blue-200 rounded-md p-3 bg-blue-50">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Accounts</h3>
-            <div className="space-y-2 text-xs text-blue-700">
-              <p className="font-medium">Tutor accounts:</p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>marang.ngewa@dawnbell.edu / Dawnbell2023!</li>
-                <li>katlego.darula@dawnbell.edu / Dawnbell2023!</li>
-                <li>priya.patel@dawnbell.edu / Dawnbell2023!</li>
-                <li>gift.tshekiso@dawnbell.edu / Dawnbell2023!</li>
-              </ul>
-            </div>
-          </div>
-        )}
-        
         <div className="text-center mt-4">
           <p>
             Don't have an account? {' '}

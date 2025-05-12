@@ -26,6 +26,7 @@ export const useAuth = () => {
         console.log('Token refreshed successfully');
       } else if (event === 'SIGNED_IN') {
         console.log('User signed in successfully');
+        toast.success('Signed in successfully');
       }
       
       setLoading(false);
