@@ -6,8 +6,6 @@ import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/c
 import { Tutor } from "@/types/tutors";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
 
 interface TutorBookingModalProps {
   tutor: Tutor;
@@ -30,33 +28,21 @@ const TutorBookingModal = ({
   handleBookSession,
   availableTimes
 }: TutorBookingModalProps) => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
 
-  // Display tutor login credentials if we're on the local development environment
-  const showDevCredentials = process.env.NODE_ENV === 'development';
+  const isAuthenticated = user && session;
 
   return (
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Book a Session with {tutor.name}</DialogTitle>
         <DialogDescription>
-          {user 
+          {isAuthenticated
             ? "Sessions are 1 hour long. Select a date and time to request a session. Your request will be pending until the tutor accepts it."
-            : "You'll need to log in before booking a session"}
+            : "You need to be signed in to book a session. Please sign in first."}
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4">
-        {showDevCredentials && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <InfoIcon className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-xs text-blue-800">
-              <p><strong>Developer Note:</strong> To log in as this tutor:</p>
-              <p>Email: {tutor.name.toLowerCase().replace(' ', '.')}@dawnbell.edu</p>
-              <p>Password: Dawnbell2023!</p>
-            </AlertDescription>
-          </Alert>
-        )}
-
         <Calendar
           mode="single"
           selected={selectedDate}
@@ -68,7 +54,7 @@ const TutorBookingModal = ({
           disabled={(date) => {
             const now = new Date();
             const isPast = date < now;
-            return isPast;
+            return isPast || !isAuthenticated;
           }}
         />
         
@@ -82,6 +68,7 @@ const TutorBookingModal = ({
                 variant={selectedTime === time ? "default" : "outline"}
                 onClick={() => setSelectedTime(time)}
                 size="sm"
+                disabled={!isAuthenticated}
               >
                 {time}
               </Button>
@@ -92,10 +79,18 @@ const TutorBookingModal = ({
         <Button 
           className="w-full" 
           onClick={handleBookSession}
-          disabled={!selectedDate || isBooking}
+          disabled={!selectedDate || isBooking || !isAuthenticated}
         >
-          {isBooking ? "Sending Request..." : user ? "Request Session" : "Sign In & Book"}
+          {isBooking ? "Sending Request..." : 
+           !isAuthenticated ? "Please Sign In First" : 
+           "Request Session"}
         </Button>
+        
+        {!isAuthenticated && (
+          <p className="text-sm text-gray-600 text-center">
+            You need to be signed in to book sessions. Please refresh the page and sign in.
+          </p>
+        )}
       </div>
     </DialogContent>
   );
