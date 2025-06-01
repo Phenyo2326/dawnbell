@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Lock, Mail } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuth } from '@/hooks/useAuth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,6 +18,54 @@ const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { user, session, loading: authLoading } = useAuth();
+
+  // Check if user is already authenticated and redirect appropriately
+  useEffect(() => {
+    const checkAndRedirect = async () => {
+      if (!authLoading && user && session) {
+        console.log('User already authenticated, checking profile...');
+        
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            return;
+          }
+
+          if (profileData) {
+            console.log('Redirecting based on role:', profileData.role);
+            if (profileData.role === 'student') {
+              navigate('/student-dashboard', { replace: true });
+            } else if (profileData.role === 'tutor') {
+              navigate('/tutor-dashboard', { replace: true });
+            }
+          }
+        } catch (error) {
+          console.error('Error during redirect check:', error);
+        }
+      }
+    };
+
+    checkAndRedirect();
+  }, [user, session, authLoading, navigate]);
+
+  // Don't render login form if user is already authenticated
+  if (!authLoading && user && session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Already Signed In</h2>
+          <p className="text-gray-600 mb-4">You are already signed in. Redirecting you to your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +186,18 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Loading...</h2>
+          <p className="text-gray-600">Checking authentication status...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">

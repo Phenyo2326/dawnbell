@@ -44,6 +44,54 @@ export type Database = {
           },
         ]
       }
+      "Booking session": {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      booking_sessions: {
+        Row: {
+          created_at: string | null
+          end_time: string
+          id: number
+          start_time: string
+          status: string
+          student_id: string
+          tutor_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time: string
+          id?: never
+          start_time: string
+          status?: string
+          student_id: string
+          tutor_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string
+          id?: never
+          start_time?: string
+          status?: string
+          student_id?: string
+          tutor_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       materials: {
         Row: {
           created_at: string | null
